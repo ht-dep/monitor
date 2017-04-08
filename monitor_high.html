@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <link rel="icon" href="https://static.jianshukeji.com/hcode/images/favicon.ico">
+
+    <style>
+
+        /* css 代码  */
+
+    </style>
+
+    <script src="https://img.hcharts.cn/jquery/jquery-1.8.3.min.js"></script>
+
+    <script src="https://img.hcharts.cn/highcharts/highcharts.js"></script>
+
+    <script src="https://img.hcharts.cn/highcharts/modules/exporting.js"></script>
+
+    <script src="https://img.hcharts.cn/highcharts-plugins/highcharts-zh_CN.js"></script>
+
+    <script src="https://img.hcharts.cn/highcharts/themes/grid-light.js"></script>
+
+</head>
+
+<body>
+
+<div id="container" style="min-width:400px;height:400px"></div>
+
+<script>
+    var received_msg = [];
+    var key = {"key": "rinpo"}
+    WebSocketTest()
+    function WebSocketTest() {
+        if ("WebSocket" in window) {
+//            alert("您的浏览器支持 WebSocket!");// 打开一个
+            var ws = new WebSocket("ws://localhost:9999");
+
+            ws.onopen = function () {// Web Socket 已连接上，使用 send() 方法发送数据
+//                ws.send(JSON.stringify(key))
+//                ws.send("发送数据");
+//                console.log("发送数据");
+////                alert("数据发送中...");
+            };
+
+            ws.onmessage = function (evt) {
+                var received_msg = evt.data;
+                console.log(received_msg);
+                received_msg = JSON.parse(received_msg);
+                //判断长度，数据满足5个就渲染页面
+
+                if (option.series[0].data.length < 30) {
+                    option.series[0].data.push(received_msg['MEM']['mem_free'])
+                    dom.highcharts(option)
+                }
+                if (option.series[0].data.length = 30) {
+                    option.series[0].data.shift()
+                    option.series[0].data.push(received_msg['MEM']['mem_free'])
+                    dom.highcharts(option)
+                }
+                else {
+                    alert("数据出错")
+                }
+
+
+            };
+            ws.onclose = function () {// 关闭 websocket
+                alert("连接已关闭...");
+            };
+        } else {// 浏览器不支持 WebSocket
+            alert("您的浏览器不支持 WebSocket!");
+        }
+    }
+    var dom = $("#container")
+    var option = {
+        chart: {
+            type: 'line'
+        },
+        title: {
+            text: '内存数据'
+        },
+        subtitle: {
+            text: document.ontouchstart === undefined ?
+                '鼠标拖动可以进行缩放' : '手势操作进行缩放'
+        }, xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: {
+                millisecond: '%H:%M:%S.%L',
+                second: '%H:%M:%S',
+                minute: '%H:%M',
+                hour: '%H:%M',
+                day: '%m-%d',
+                week: '%m-%d',
+                month: '%Y-%m',
+                year: '%Y'
+            }
+        },
+        tooltip: {
+            dateTimeLabelFormats: {
+                millisecond: '%H:%M:%S.%L',
+                second: '%H:%M:%S',
+                minute: '%H:%M',
+                hour: '%H:%M',
+                day: '%Y-%m-%d',
+                week: '%m-%d',
+                month: '%Y-%m',
+                year: '%Y'
+            }
+        },
+        yAxis: {
+            title: {
+                text: '大小 (KB)'
+            }
+        },
+        legend: {
+            enabled: false
+        },
+        plotOptions: {
+            area: {
+                fillColor: {
+                    linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 0,
+                        y2: 1
+                    },
+                    stops: [
+                        [0, Highcharts.getOptions().colors[0]],
+                        [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                    ]
+                },
+                marker: {
+                    radius: 2
+                },
+                lineWidth: 1,
+                states: {
+                    hover: {
+                        lineWidth: 1
+                    }
+                },
+                threshold: null
+            }
+        },
+        series: [{
+            type: 'area',
+            name: '内存',
+            data: []
+        }]
+    }
+
+    dom.highcharts(option)
+</script>
+
+</body>
+
+</html>
+
+​
